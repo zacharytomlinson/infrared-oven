@@ -13,24 +13,23 @@
 #include <LiquidCrystal.h>
 #include <LiquidMenu.h>
 #include <Adafruit_MAX31865.h>
-#include "./pcbake-oven.h"
+#include "./SSR.h"
+
+#define RREF  430.0
+#define RRES  100.0
+
+enum class KeyInput { RIGHT, LEFT, UP, DOWN, SELECT };
 
 float temp = 0.0f;
 int dtime = 0;
 
-// pass in the CS pin
 Adafruit_MAX31865 thermo = Adafruit_MAX31865(3);
+SSR relay = SSR(2);
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-/************ Main header *************/
-//LiquidLine header(0, 0, "   PCBake Oven   ");
-/************ Info lines **************/
-//LiquidLine version_banner(0, 1, "<    ", VERSION, "    >");
-LiquidLine temp_banner(0, 1, temp + " C");
-LiquidLine timeline(0, 0, dtime + "s")
-/************ Menu screens ************/
+LiquidLine temp_banner(0, 1, temp, " C");
+LiquidLine timeline(0, 0, dtime, "s");
 LiquidScreen main_screen(timeline, temp_banner);
-/************ Main menu ***************/
 LiquidMenu menu(lcd, main_screen);
 
 void setup() {
@@ -44,10 +43,15 @@ void loop() {
   dtime = millis() / 1000;
   temp = thermo.temperature(RRES, RREF);
   menu.update();
-  delay(100);
+  delay(1000);
+  if(temp < 100) {
+    Serial.println(relay.toggle());
+  } else if(temp > 140) {
+    Serial.println(relay.toggle());
+  }
+  log_fault();
 }
 
-/*
 void log_fault() {
   uint8_t fault = thermo.readFault();
   if (fault) {
@@ -74,6 +78,7 @@ void log_fault() {
   }
 }
 
+/*
 KeyInput check_input() {
   int val = analogRead(A0);
 
