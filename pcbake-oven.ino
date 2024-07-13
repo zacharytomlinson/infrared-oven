@@ -1,15 +1,3 @@
-/*
- * LCD RS pin to digital pin 8
- * LCD Enable pin to digital pin 9
- * LCD D4 pin to digital pin 4
- * LCD D5 pin to digital pin 5
- * LCD D6 pin to digital pin 6
- * LCD D7 pin to digital pin 7
- * Button pin to analog pin A0
-
- http://www.arduino.cc/en/Tutorial/LiquidCrystal
- */
-
 #include <LiquidCrystal.h>
 #include <LiquidMenu.h>
 #include <Adafruit_MAX31865.h>
@@ -19,24 +7,39 @@
 #define RRES  100.0
 
 enum class KeyInput { RIGHT, LEFT, UP, DOWN, SELECT };
+enum class FloatBias { LEFT, RIGHT };
 
 float temp = 0.0f;
 int dtime = 0;
+
+uint8_t center_float(uint8_t _buflen, FloatBias _bias) {
+  auto frame = [&]() { return (16>>1)-(_buflen>>1); };
+  if(_buflen%2>0) {
+    if(_bias == FloatBias::LEFT) return frame()-1;
+    return frame()+1;
+  }
+  return frame();
+};
 
 Adafruit_MAX31865 thermo = Adafruit_MAX31865(3);
 SSR relay = SSR(2);
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-LiquidLine temp_banner(0, 1, temp, " C");
-LiquidLine timeline(0, 0, dtime, "s");
-LiquidScreen main_screen(timeline, temp_banner);
-LiquidMenu menu(lcd, main_screen);
+LiquidLine main_banner(center_float(11, FloatBias::LEFT), 0, "PCBake Oven");
+LiquidLine ver_banner(center_float(6, FloatBias::LEFT), 1, "v1.0.1");
+LiquidLine temp_line(0, 0, temp, " C");
+LiquidLine time_line(0, 1, dtime, "s");
+LiquidScreen splash_screen(main_banner, ver_banner);
+LiquidScreen main_screen(time_line, temp_line);
+LiquidMenu menu(lcd, splash_screen, main_screen);
 
 void setup() {
   thermo.begin(MAX31865_3WIRE);
   lcd.begin(16, 2);
   menu.update();
   Serial.begin(9600);
+  delay(5000);
+  menu.next_screen();
 }
 
 void loop() {

@@ -1,7 +1,7 @@
-#include <stdint.h>
+#ifndef SSR_h
+#define Cell_h
 
-#define Screen_h
-#define UIFRAMES 5
+#include <stdint.h>
 
 const uint8_t DELTA[8] = {0b00000,0b00100,0b00100,0b01010,0b01010,0b10001,0b11111};
 const uint8_t DEGREE[8] = {0b11100,0b10100,0b10100,0b11100,0b00000,0b00000,0b00000};
@@ -12,10 +12,17 @@ const uint8_t R_CARET_SEL[8] = {0b11111,0b01111,0b00111,0b01011,0b00111,0b01111,
 
 const uint8_t CHARACTER_SET[8][6] = {DELTA, DEGREE, L_CARET, L_CARET_SEL, R_CARET, R_CARET_SEL}; 
 
-uint8_t screen_idx = 0;
+const uint8_t MAX_WIDTH = 16;
 
-enum class FloatBias { LEFT, RIGHT };
+enum class Alignment { LEFT, RIGHT, CENTER };
 
-uint8_t center_float(uint8_t, FloatBias);
+class Cell {
+  private:
+  Alignment _align;
+  
+  public:
+  uint8_t center_float(uint8_t, FloatBias);
+}
 
 
+#endif
