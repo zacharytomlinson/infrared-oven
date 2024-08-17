@@ -13,9 +13,10 @@ class SSR {
   uint8_t GPIO_pin;
 
   public:
-  SSR(int8_t gpio_pin);
+  SSR(int8_t);
   bool toggle();
   bool current_state();
+  void set_state(bool);
 };
 
 #endif

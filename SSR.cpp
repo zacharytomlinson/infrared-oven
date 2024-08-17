@@ -18,3 +18,7 @@ bool SSR::toggle() {
 bool SSR::current_state() {
   return digitalRead(SSR::GPIO_pin);
 }
+
+void SSR::set_state(bool state) {
+  digitalWrite(SSR::GPIO_pin, state);
+}
